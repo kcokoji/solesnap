@@ -220,7 +220,9 @@ export default function Example({ params: { id } }) {
                     onChange={(e) => setSelectedColor(e.target.value)}
                     className="border px-9 py-2 "
                   >
-                    <option value="">Select</option>
+                    <option selected={true} disabled={true}>
+                      Select
+                    </option>
                     {product.color.map((color) => (
                       <option key={color} value={color}>
                         {color}
@@ -241,7 +243,9 @@ export default function Example({ params: { id } }) {
                       onChange={(e) => setSelectedSize(e.target.value)}
                       className="border  px-9 py-2 text-center"
                     >
-                      <option value="">Select</option>
+                      <option selected={true} disabled={true}>
+                        Select
+                      </option>
                       {product.sizes.map((size) => (
                         <option key={size} value={size}>
                           {size}
