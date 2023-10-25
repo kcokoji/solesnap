@@ -95,68 +95,73 @@ export default function Cart() {
 
   return (
     <div className="lg:px-20 bg-white mx-auto flex flex-col">
-      <h1 className="text-2xl md:text-3xl font-bold text-center lg:px-4 mt-10">
-        Your Cart
-      </h1>
-
       {cartItems && cartItems.length > 0 ? (
-        <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
-          <div className="lg:w-1/2 ">
-            {cartItems.map((item, index) => (
-              <div key={index} className="p-6">
-                <CartItem
-                  productId={item.id}
-                  size={item.size || item.Size}
-                  color={item.color}
-                  userId={userId}
-                  cartId={cartId}
-                  quantity={item.quantity}
-                  updateQuantity={updateQuantity}
-                />
-              </div>
-            ))}
-
-            <div className="py-6">
-              <Link
-                href="/products"
-                className="underline-offset-[6px] underline p-6 my-10"
-              >
-                Continue Shopping
-              </Link>
-            </div>
-          </div>
-
-          <hr className="hidden lg:block border-t border-gray-300 mx-4" />
-
-          <div className="lg:w-1/4 p-8 lg:right-48 z-10 lg:fixed lg:rounded-sm bg-[#f7f5f0] lg:shadow-md">
-            <h2 className="text-lg font-semibold mb-2">Total Amount</h2>
-            <p className="text-sm text-gray-700 mb-4">
-              Shipping will be calculated at checkout
-            </p>
-            <p className="text-lg font-bold mb-4">
-              ₦{totalAmount.toLocaleString()} NGN
-            </p>
-            <div className="flex justify-center">
-              <button
-                className="bg-black text-white hover:opacity-75 text-center w-full py-3"
-                onClick={initiateCheckout}
-                disabled={isCheckingOut} // Disable the button when loading
-              >
-                {isCheckingOut ? (
-                  <ScaleLoader
-                    color="white"
-                    speedMultiplier={3}
-                    loading={true}
+        <>
+          {" "}
+          <h1 className="text-2xl md:text-3xl font-bold text-center lg:px-4 mt-10">
+            Your Cart
+          </h1>
+          <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
+            <div className="lg:w-1/2 ">
+              {cartItems.map((item, index) => (
+                <div key={index} className="p-6">
+                  <CartItem
+                    productId={item.id}
+                    size={item.size || item.Size}
+                    color={item.color}
+                    userId={userId}
+                    cartId={cartId}
+                    quantity={item.quantity}
+                    updateQuantity={updateQuantity}
                   />
-                ) : (
-                  "Checkout"
-                )}
-              </button>
+                </div>
+              ))}
+
+              <div className="py-6">
+                <Link
+                  href="/products"
+                  className="underline-offset-[6px] underline p-6 my-10"
+                >
+                  Continue Shopping
+                </Link>
+              </div>
+            </div>
+
+            <hr className="hidden lg:block border-t border-gray-300 mx-4" />
+
+            <div className="lg:w-1/4 p-8 lg:right-48 z-10 lg:fixed lg:rounded-sm bg-[#f7f5f0] lg:shadow-md">
+              <h2 className="text-lg font-semibold mb-2">Total Amount</h2>
+              <p className="text-sm text-gray-700 mb-4">
+                Shipping will be calculated at checkout
+              </p>
+              <p className="text-lg font-bold mb-4">
+                ₦{totalAmount.toLocaleString()} NGN
+              </p>
+              <div className="flex justify-center">
+                <button
+                  className="bg-black text-white hover:opacity-75 text-center w-full py-3"
+                  onClick={initiateCheckout}
+                  disabled={isCheckingOut} // Disable the button when loading
+                >
+                  {isCheckingOut ? (
+                    <ScaleLoader
+                      color="white"
+                      speedMultiplier={3}
+                      loading={true}
+                    />
+                  ) : (
+                    "Checkout"
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       ) : (
-        <div className="text-center p-6">
+        <div className="text-center p-6 h-screen flex items-center justify-center flex-col">
+          <h1 className="text-2xl md:text-3xl font-bold text-center lg:px-4 mt-10">
+            Your Cart
+          </h1>
           <h1 className="text-sm md:text-lg">Your cart is currently empty</h1>
           <Link
             href="/products"

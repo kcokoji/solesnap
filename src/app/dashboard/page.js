@@ -63,7 +63,7 @@ export default function Page() {
   }, [user]); // Dependency on user to run whenever user changes
 
   return (
-    <div className="h-full mx-auto p-10 my-20 flex justify-center items-center">
+    <div className="min-h-screen mx-auto p-10 my-20 flex justify-center items-center">
       {loading ? ( // Display loading spinner while data is being fetched
         <div className="bg-white h-screen w-screen z-50 flex justify-center items-center">
           <ScaleLoader
@@ -74,15 +74,17 @@ export default function Page() {
           />
         </div>
       ) : user ? (
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold lg:font-extrabold">
+        <div className="">
+          <h1 className="text-3xl md:text-4xl font-bold lg:font-extrabold my-9">
             Welcome {user.family_name}
           </h1>
 
-          <h2 className="text-center text-xl md:text-2xl font-bold my-2">
+          <h2 className="text-center text-xl md:text-2xl font-bold mb-20">
             Account Overview
           </h2>
-          <Link href="/logout">Logout</Link>
+          <Link href="/logout" className=" p-4 bg-black text-white my-20">
+            Logout
+          </Link>
         </div>
       ) : (
         <div>

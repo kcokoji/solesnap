@@ -29,8 +29,7 @@ export default function Navbar() {
     if (cartLength > 0) {
       return (
         <span className="absolute bottom-3 -right-2 flex items-center justify-center h-5 w-5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-75"></span>
-          <span className=" inline-flex justify-center items-center rounded-full h-5 w-5 bg-black">
+          <span className=" inline-flex justify-center items-center rounded-full h-4 w-4 bg-black">
             <p className="text-white text-[0.6rem]">{cartLength}</p>
           </span>
         </span>

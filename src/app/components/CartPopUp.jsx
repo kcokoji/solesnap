@@ -177,7 +177,9 @@ const CardPopUp = ({ isOpen, setOpen, product }) => {
                         onChange={(e) => setSelectedSize(e.target.value)}
                         className="border  px-9 py-2"
                       >
-                        <option>Select</option>
+                        <option disabled={true} selected={true}>
+                          Select
+                        </option>
                         {product.sizes.map((size) => (
                           <option key={size} value={size}>
                             {size}
@@ -192,7 +194,9 @@ const CardPopUp = ({ isOpen, setOpen, product }) => {
                         onChange={(e) => setSelectedColor(e.target.value)}
                         className="border px-9 py-2"
                       >
-                        <option>Select</option>
+                        <option disabled={true} selected={true}>
+                          Select
+                        </option>
                         {product.color.map((color) => (
                           <option key={color} value={color}>
                             {color}
