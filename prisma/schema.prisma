@@ -18,6 +18,7 @@ model User {
   address     Address?
   cart        Product[]
   orders      Order[]
+  totalAmount Int?
 }
 
 type Address {
@@ -36,8 +37,7 @@ type Order {
 }
 
 type Product {
-  id       Int
-  Size     String
-  quantity Int
-  color    String
+  id    Int
+  size  String
+  color String
 }

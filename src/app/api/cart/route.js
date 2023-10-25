@@ -3,7 +3,8 @@ import prisma from "@/app/libs/prismaDB";
 
 export async function POST(request) {
   const body = await request.json();
-  const { userId, productId, size, color, quantity } = body;
+
+  const { userId, productId, size, color } = body;
 
   if (!userId || !productId || !size || !color) {
     return new NextResponse("Missing Fields", { status: 400 });
@@ -17,36 +18,41 @@ export async function POST(request) {
       },
     });
 
-    if (!existingUser) {
-      return new NextResponse("User not found", { status: 404 });
+    if (existingUser) {
+      const isProductInCart = existingUser.cart.some(
+        (product) => product.id === productId
+      );
+      if (isProductInCart) {
+        return new NextResponse("Item already in cart ", { status: 409 });
+      }
     }
 
-    // Check if the product is already in the cart
-    const isProductInCart = existingUser.cart.some(
-      (product) => product.id === productId
-    );
-
-    if (isProductInCart) {
-      return new NextResponse("Product already in the cart", { status: 400 });
-    }
-
-    const updatedUser = await prisma.user.update({
+    const Cart = await prisma.user.upsert({
       where: {
         userId: userId,
       },
-      data: {
+      create: {
+        userId: userId,
+        cart: {
+          set: {
+            id: productId,
+            color: color,
+            size: size,
+          },
+        },
+      },
+      update: {
         cart: {
           push: {
             id: productId,
             color: color,
-            Size: size,
-            quantity: quantity,
+            size: size,
           },
         },
       },
     });
 
-    return NextResponse.json(updatedUser);
+    return NextResponse.json(Cart);
   } catch (err) {
     return new NextResponse(
       { message: "Internal Server Error", error: err.message },

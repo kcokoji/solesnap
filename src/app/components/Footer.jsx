@@ -6,14 +6,14 @@ const year = d.getFullYear();
 
 export default function Footer() {
   return (
-    <div className="relative isolate overflow-hidden bg-black py-10 sm:py-12 lg:py-20">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <div className="relative isolate overflow-hidden bg-black py-10 sm:py-12 lg:py-20 flex-shrink-0">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8 flex flex-col justify-between h-full">
         <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2 mb-10">
           <div className="max-w-xl lg:max-w-lg">
             <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
               SOLESNAP
             </h1>
-            <p className="mt-4  text-base  text-gray-300">
+            <p className="mt-4 text-base text-gray-300">
               The premier e-commerce destination where style meets luxury,
               renowned for providing its customers with specially curated
               high-fashion and cutting-edge designer shoes and accessories.

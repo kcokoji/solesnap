@@ -23,24 +23,20 @@ const navigation = [
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { cartLength, guestCartLength } = useCart();
+  const { cartLength } = useCart();
 
   const renderCartElement = () => {
     if (cartLength > 0) {
       return (
-        <span className="absolute bottom-3 right-3 bg-black text-white rounded-full px-[6px] py-[3px] text-[0.5rem]">
-          {cartLength}
-        </span>
-      );
-    } else if (guestCartLength > 0) {
-      return (
-        <span className="absolute bottom-3 right-3 flex h-3 w-3">
+        <span className="absolute bottom-3 -right-2 flex items-center justify-center h-5 w-5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-black"></span>
+          <span className=" inline-flex justify-center items-center rounded-full h-5 w-5 bg-black">
+            <p className="text-white text-[0.6rem]">{cartLength}</p>
+          </span>
         </span>
       );
     } else {
-      return null; // If both cartLength and guestLength are 0, display nothing
+      return null;
     }
   };
 
@@ -86,12 +82,12 @@ export default function Navbar() {
           {renderCartElement()}
         </div>
 
-        <div className="hidden lg:flex items-center justify-center relative">
+        <div className="hidden lg:flex items-center justify-center relative space-x-5">
           <Link href="/account">
-            <UserIcon className="h-6 w-6 mr-7" />
+            <UserIcon className="h-6 w-6" />
           </Link>
           <Link href="/cart">
-            <ShoppingBagIcon className="h-6 w-6 mr-5" />
+            <ShoppingBagIcon className="h-6 w-6 " />
           </Link>
           {renderCartElement()}
         </div>

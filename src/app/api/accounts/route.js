@@ -2,25 +2,30 @@ import { NextResponse } from "next/server";
 import prisma from "@/app/libs/prismaDB";
 
 export async function POST(request) {
+  const body = await request.json();
+  const { userId } = body;
+
+  // Check if userId is provided
+  if (!userId) {
+    return new NextResponse("Missing Fields", { status: 400 });
+  }
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      userId: userId,
+    },
+  });
+
   try {
-    const body = await request.json();
-    const { userId } = body;
-
-    // Check if userId is provided
-    if (!userId) {
-      return new NextResponse("Missing Fields", { status: 400 });
-    }
-
-    // Use prisma.upsert to create or update the user
-    const user = await prisma.user.upsert({
-      where: { userId: userId },
+    const CreateUser = await prisma.user.upsert({
+      where: {
+        userId: userId,
+      },
       create: {
         userId: userId,
       },
       update: {},
     });
-
-    return NextResponse.json(user);
+    return new NextResponse(CreateUser);
   } catch (err) {
     // Log the error for debugging purposes
     console.error("Error creating/updating user:", err);
@@ -33,6 +38,7 @@ export async function POST(request) {
   }
 }
 
+// The DELETE function remains unchanged
 export async function DELETE(request) {
   const body = await request.json();
   const { userId } = body;
@@ -48,10 +54,11 @@ export async function DELETE(request) {
         userId: userId,
       },
     });
+
     return NextResponse.json(deleteUser);
   } catch (err) {
-    return NextResponse.json(
-      { message: "Error deleting user account", err },
+    return new NextResponse(
+      { message: "Error deleting user account", error: err },
       { status: 500 }
     );
   }

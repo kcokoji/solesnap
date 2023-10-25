@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
 import { ScaleLoader } from "react-spinners";
+import { v4 as uuidv4 } from "uuid";
 
 const reviews = { average: 4, totalCount: 117 };
 
@@ -27,7 +28,6 @@ export default function Example({ params: { id } }) {
   const [selectedSize, setSelectedSize] = useState();
   const [selectedColor, setSelectedColor] = useState();
   const [userId, setUserId] = useState(null);
-  const [guestCart, setGuestCart] = useState([]);
   const [isCreatingCart, setIsCreatingCart] = useState(false);
   const router = useRouter();
 
@@ -37,7 +37,6 @@ export default function Example({ params: { id } }) {
         const res = await fetch("/api/kindeSession");
         const data = await res.json();
 
-        // Check if data is defined and has a user property with an id
         if (data && data.user && data.user.id) {
           setUserId(data.user.id);
         }
@@ -45,14 +44,6 @@ export default function Example({ params: { id } }) {
         console.error("Error fetching user session:", error);
       }
     };
-
-    // Check if the user is a guest and there is a cart in local storage
-    if (!userId) {
-      const storedGuestCart =
-        JSON.parse(localStorage.getItem("guestCart")) || [];
-      // Update state with guest cart
-      setGuestCart(storedGuestCart);
-    }
 
     getKindeSession();
   }, [userId]);
@@ -63,32 +54,37 @@ export default function Example({ params: { id } }) {
       return;
     }
 
+    let identifier = localStorage.getItem("cartId");
+
+    if (!userId && !identifier) {
+      // If there's no cartId in local storage, generate one with UUID
+      identifier = uuidv4();
+      localStorage.setItem("cartId", identifier);
+    }
+
     setIsCreatingCart(true);
 
     try {
-      const isProductInCart =
-        guestCart.find((item) => item.productId === product.id) !== undefined;
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId || identifier,
+          productId: product.id,
+          size: selectedSize,
+          color: selectedColor,
+        }),
+      });
 
-      if (isProductInCart) {
-        toast.error("Item already in cart");
+      if (response.ok) {
+        // Handle success
+
         setSelectedSize();
         setSelectedColor();
         setQuantity(1);
 
-        return;
-      }
-
-      if (!userId) {
-        // User is a guest, store the cart in local storage
-        const cartItem = {
-          productId: product.id,
-          size: selectedSize,
-          color: selectedColor,
-          quantity: quantity,
-        };
-        const updatedCart = [...guestCart, cartItem];
-        localStorage.setItem("guestCart", JSON.stringify(updatedCart));
-        setGuestCart(updatedCart);
         toast.custom((t) => (
           <div
             className={`${
@@ -112,67 +108,19 @@ export default function Example({ params: { id } }) {
             </div>
           </div>
         ));
-        setSelectedSize();
-        setSelectedColor();
-        setQuantity(1);
+      } else if (response.status === 409) {
+        toast.error("Item is already in cart");
       } else {
-        // User is authenticated, add the item to the server-side cart
-        const response = await fetch("/api/cart", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: userId,
-            productId: product.id,
-            size: selectedSize,
-            color: selectedColor,
-            quantity: quantity,
-          }),
-        });
-
-        if (response.ok) {
-          setSelectedSize();
-          setSelectedColor();
-          setQuantity(1);
-          toast.custom((t) => (
-            <div
-              className={`${
-                t.visible ? "animate-enter" : "animate-leave"
-              }  bg-white shadow-lg rounded-lg pointer-events-auto flex justify-between ring-1 ring-black ring-opacity-5`}
-              style={{ maxWidth: "400px" }} // Adjust the maximum width as needed
-            >
-              <div className="p-4 flex items-center">
-                <CheckCircleIcon className="w-5 h-5  mr-2" />
-                <p className="text-sm font-medium text-black">
-                  Item added to Bag!
-                </p>
-              </div>
-              <div className="border-l border-gray-200">
-                <button
-                  onClick={() => router.push("/cart")}
-                  className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-white"
-                >
-                  <ShoppingBagIcon className="h-5 w-5 text-black" />
-                </button>
-              </div>
-            </div>
-          ));
-        } else {
-          setSelectedSize();
-          setSelectedColor();
-          setQuantity(1);
-          toast.error("Item already in cart");
-        }
+        toast.error("Failed to add item to cart");
       }
+      setSelectedSize();
+      setSelectedColor();
+      setQuantity(1);
     } catch (error) {
-      console.error("Error adding item to cart:", error);
-      toast.error("Error adding item to cart");
+      console.error("Error sending products to cart:", error);
+      // Handle error
     } finally {
       setIsCreatingCart(false);
-      setSelectedSize(null);
-      setSelectedColor(null);
-      setQuantity(1);
     }
   };
 
@@ -327,14 +275,14 @@ export default function Example({ params: { id } }) {
                 </div>
 
                 <button
-                  className="px-10 bg-white text-black my-3 border w-full py-2 flex items-center justify-center"
+                  className="px-10 bg-black text-white my-3 border w-full py-2 flex items-center justify-center"
                   onClick={handleAddToCart}
                   disabled={isCreatingCart}
                 >
                   {isCreatingCart ? (
                     <div className="flex items-center">
                       <ScaleLoader
-                        color="black"
+                        color="white"
                         speedMultiplier={3}
                         size="28px"
                         loading={true}

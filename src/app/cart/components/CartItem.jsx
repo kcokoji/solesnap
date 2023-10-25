@@ -9,11 +9,11 @@ const CartItem = ({
   size,
   color,
   userId,
-  onQuantityChange,
-  quantity,
+  updateQuantity,
+  cartId,
 }) => {
   const [product, setProduct] = useState(null);
-  const [Usequantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(1);
   useEffect(() => {
     const fetchProduct = async () => {
       const productInCart = products.find((p) => p.id === productId);
@@ -31,17 +31,15 @@ const CartItem = ({
   const productExists = product !== null;
 
   const handleDecrease = () => {
-    if (quantity > 1) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      onQuantityChange(productId, newQuantity, userId);
-    }
+    const newQuantity = quantity - 1;
+    setQuantity(newQuantity);
+    updateQuantity(productId, newQuantity);
   };
 
   const handleIncrease = () => {
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
-    onQuantityChange(productId, newQuantity, userId);
+    updateQuantity(productId, newQuantity);
   };
 
   const handleDelete = async () => {
@@ -62,23 +60,29 @@ const CartItem = ({
         if (res.ok) {
           // Handle the success (e.g., update UI)
           setProduct(null);
-          onQuantityChange(productId, 0); // Set quantity to 0 to remove the item
         } else {
           // Handle the error, e.g., show an error message
           console.error("Failed to remove item from the cart:", res.statusText);
         }
-      } else {
-        // User is a guest, delete from the local guest cart
-        const storedGuestCart =
-          JSON.parse(localStorage.getItem("guestCart")) || [];
-        const updatedCart = storedGuestCart.filter(
-          (item) => item.id !== productId
-        );
-        localStorage.setItem("guestCart", JSON.stringify(updatedCart));
+      } else if (cartId) {
+        const res = await fetch("/api/cart", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: cartId,
+            productId: productId,
+          }),
+        });
 
-        // Handle the success (e.g., update UI)
-        setProduct(null);
-        onQuantityChange(productId, 0); // Set quantity to 0 to remove the item
+        if (res.ok) {
+          // Handle the success (e.g., update UI)
+          setProduct(null);
+        } else {
+          // Handle the error, e.g., show an error message
+          console.error("Failed to remove item from the cart:", res.statusText);
+        }
       }
     } catch (err) {
       console.error("Error removing item from the cart:", err);
@@ -112,10 +116,14 @@ const CartItem = ({
                 <p className="text-sm ">Color:{color}</p>
               </div>
               <div className="mb-4">
-                <button className="border px-3" onClick={handleDecrease}>
+                <button
+                  className="border px-3"
+                  onClick={handleDecrease}
+                  disabled={quantity === 1}
+                >
                   -
                 </button>
-                <span className="mx-2">{Usequantity}</span>
+                <span className="mx-2">{quantity}</span>
                 <button className="border px-3" onClick={handleIncrease}>
                   +
                 </button>

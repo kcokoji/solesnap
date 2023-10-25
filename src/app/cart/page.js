@@ -1,83 +1,83 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import CartItem from "./components/CartItem";
 import products from "../libs/ProductsDB";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import { useCart } from "../context/CartContext";
+import { useRouter } from "next/navigation";
 
 export default function Cart() {
-  const { cartData, userId, updateCartData, getGuestCartFromStorage } =
-    useCart();
+  const { cartData, userId, cartId } = useCart();
   const [totalAmount, setTotalAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [quantityMap, setQuantityMap] = useState({});
+  const [isCheckingOut, setIsCheckingOut] = useState(false); // Loading state
+  const router = useRouter();
+
+  const calculateTotalAmount = useCallback(
+    (items) => {
+      return items.reduce((total, item) => {
+        const product = products.find((p) => p.id === item.id);
+
+        if (product) {
+          const quantity = quantityMap[item.id] || 1;
+          return total + quantity * product.price;
+        } else {
+          console.warn(`Product with id ${item.id} not found.`);
+          return total;
+        }
+      }, 0);
+    },
+    [quantityMap]
+  );
+
+  const updateQuantity = (productId, newQuantity) => {
+    setQuantityMap((prevQuantityMap) => ({
+      ...prevQuantityMap,
+      [productId]: newQuantity,
+    }));
+  };
 
   useEffect(() => {
     setIsLoading(true);
-    // Calculate the initial total amount based on the initial cart data
-    const cartItems = userId ? cartData?.cart : getGuestCartFromStorage();
+    const cartItems = cartData?.cart;
+
     if (cartItems && cartItems.length > 0) {
       const initialTotalAmount = calculateTotalAmount(cartItems);
       setTotalAmount(initialTotalAmount);
     } else {
       setTotalAmount(0);
     }
+
     setIsLoading(false);
-  }, [cartData, userId, getGuestCartFromStorage]);
+  }, [cartData, userId, quantityMap, calculateTotalAmount]);
 
-  const calculateTotalAmount = (items) => {
-    return items.reduce((total, item) => {
-      const product = products.find((p) => p.id === item.id);
+  const initiateCheckout = async () => {
+    try {
+      setIsCheckingOut(true); // Set loading state to true
 
-      if (product) {
-        return total + item.quantity * product.price;
-      } else {
-        console.warn(`Product with id ${item.id} not found.`);
-        return total;
+      const response = await fetch(`/api/checkout/${userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          totalAmount: totalAmount,
+        }),
+      });
+
+      if (response.ok) {
+        router.push("/checkout");
       }
-    }, 0);
-  };
-
-  const handleQuantityChange = async (productId, newQuantity, userId) => {
-    const updatedCartData = (cartData?.cart || []).map((item) =>
-      item.id === productId ? { ...item, quantity: newQuantity } : item
-    );
-    updateCartData({ ...cartData, cart: updatedCartData });
-
-    if (userId) {
-      try {
-        const res = await fetch("/api/cart", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: userId,
-            productId: productId,
-            quantity: newQuantity,
-          }),
-        });
-
-        if (!res.ok) {
-          console.error("Failed to update item quantity:", res.statusText);
-        }
-      } catch (err) {
-        console.error("Error updating item quantity:", err);
-      }
-    } else {
-      const storedGuestCart =
-        JSON.parse(localStorage.getItem("guestCart")) || [];
-      const updatedCart = storedGuestCart.map((item) =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
-      );
-      localStorage.setItem("guestCart", JSON.stringify(updatedCart));
-
-      // Recalculate and update the total amount for guest cart
-      const updatedTotalAmount = calculateTotalAmount(updatedCart);
-      setTotalAmount(updatedTotalAmount);
+    } catch (error) {
+      console.error("Error during checkout initiation:", error);
+    } finally {
+      setIsCheckingOut(false); // Reset loading state after the operation is complete
     }
   };
+
   if (isLoading) {
     return (
       <div className="bg-white h-screen w-screen z-50 flex justify-center items-center">
@@ -91,7 +91,7 @@ export default function Cart() {
     );
   }
 
-  const cartItems = userId ? cartData?.cart : getGuestCartFromStorage();
+  const cartItems = cartData?.cart;
 
   return (
     <div className="lg:px-20 bg-white mx-auto flex flex-col">
@@ -103,17 +103,19 @@ export default function Cart() {
         <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-8">
           <div className="lg:w-1/2 ">
             {cartItems.map((item, index) => (
-              <div key={index} className="p-6 ">
+              <div key={index} className="p-6">
                 <CartItem
                   productId={item.id}
                   size={item.size || item.Size}
                   color={item.color}
                   userId={userId}
+                  cartId={cartId}
                   quantity={item.quantity}
-                  onQuantityChange={handleQuantityChange}
+                  updateQuantity={updateQuantity}
                 />
               </div>
             ))}
+
             <div className="py-6">
               <Link
                 href="/products"
@@ -135,12 +137,21 @@ export default function Cart() {
               ₦{totalAmount.toLocaleString()} NGN
             </p>
             <div className="flex justify-center">
-              <Link
-                href="/checkout"
+              <button
                 className="bg-black text-white hover:opacity-75 text-center w-full py-3"
+                onClick={initiateCheckout}
+                disabled={isCheckingOut} // Disable the button when loading
               >
-                CHECKOUT
-              </Link>
+                {isCheckingOut ? (
+                  <ScaleLoader
+                    color="white"
+                    speedMultiplier={3}
+                    loading={true}
+                  />
+                ) : (
+                  "Checkout"
+                )}
+              </button>
             </div>
           </div>
         </div>
