@@ -47,7 +47,7 @@ export default function Example() {
   }, [cartData, router, userId, cartId]);
 
   const config = {
-    public_key: process.env.FLUTTERWAVE_PUBLIC_KEY,
+    public_key: "FLWPUBK_TEST-cfb9474d9fa95b877843f2c85aeda8a6-X",
     tx_ref: Date.now(),
     amount: totalAmount,
     currency: "NGN",
